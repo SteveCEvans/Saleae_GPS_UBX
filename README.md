@@ -1,54 +1,85 @@
-§# UBX Protocol Analyzer
+# UBX Protocol High Level Analyzer
 
-This High Level Analyzer (HLA) for Saleae Logic 2 decodes the u-blox UBX protocol messages. The UBX protocol is a binary protocol used by u-blox GNSS receivers for configuration and data retrieval.
+A High Level Analyzer (HLA) for Saleae Logic 2 that decodes u-blox UBX protocol messages.
 
-## Protocol Overview
+See [the UBX protocol specification](https://content.u-blox.com/sites/default/files/documents/u-blox-F9-HPS-1.30_InterfaceDescription_UBX-22010984.pdf) for more details.
 
-The UBX protocol uses the following message structure:
+## Features
 
-```
-+----------+---------+---------+--------+------------+---------+
-| Sync     | Class   | ID      | Length | Payload    | Checksum|
-| 2 bytes  | 1 byte  | 1 byte  | 2 bytes| N bytes    | 2 bytes |
-+----------+---------+---------+--------+------------+---------+
-```
+- Decodes all standard UBX protocol message classes:
+  - NAV (Navigation Results): PVT, SAT, STATUS, POSECEF, POSLLH, DOP, VELECEF, VELNED, CLOCK, TIMEGPS, TIMEUTC, ODO, AOPSTATUS
+  - RXM (Receiver Manager): RAW, RAWX, SFRBX
+  - INF (Information): Debug, Error, Notice, Test, Warning
+  - ACK (Acknowledgements): ACK, NAK
+  - CFG (Configuration): PRT, MSG, RATE, NAV5, GNSS, ANT, PM, RINV, ITFM, LOGFILTER, TMODE, SBAS, USB
+  - MON (Monitoring): IO, VER, MSGPP, RXBUF, TXBUF, HW, HW2
+  - TIM (Timing): SVIN, VRFY, DOSC, TOS, SMEAS
+  - LOG (Logging): ERASE, STRING, CREATE, INFO, RETRIEVE
 
-- Sync: 0xB5 0x62
-- Class: Message class (e.g., NAV, CFG, MON)
-- ID: Message ID within the class
-- Length: Payload length (little-endian)
-- Payload: Message-specific data
-- Checksum: Fletcher checksum over Class, ID, Length, and Payload
+- Provides detailed parsing of message fields including:
+  - GPS fix information
+  - Satellite tracking data
+  - Position and velocity data
+  - Timing information
+  - Hardware status
+  - Buffer statistics
+  - Version information
+  - Configuration settings
+
+## Installation
+
+1. Download the extension files
+2. In Logic 2, click "Load Existing Extension"
+3. Navigate to and select the downloaded extension folder
 
 ## Usage
 
-1. Install this analyzer in Logic 2
-2. Add a new analyzer to your capture
-3. Select "UBX Protocol" from the list of analyzers
-4. The analyzer requires an existing async serial analyzer as its input
-5. Configure the async serial analyzer for your data:
-   - Typically 9600, 38400, or 115200 baud
-   - 8 data bits
-   - 1 stop bit
-   - No parity
+1. Capture serial data from your u-blox GPS receiver
+2. Add the "UBX Protocol" analyzer to your capture
+3. Configure the analyzer settings if needed
+4. The analyzer will automatically decode UBX messages and display:
+   - Message class and ID
+   - Message length
+   - Parsed message contents
+   - Checksum validation
 
-## Supported Message Classes
+## Message Display Format
 
-- NAV (0x01): Navigation Results
-- RXM (0x02): Receiver Manager Messages
-- INF (0x04): Information Messages
-- ACK (0x05): Acknowledge/Nack Messages
-- CFG (0x06): Configuration Messages
-- UPD (0x09): Firmware Update Messages
-- MON (0x0A): Monitoring Messages
-- TIM (0x0D): Timing Messages
-- MGA (0x13): Multiple GNSS Assistance
-- LOG (0x21): Logging Messages
-- SEC (0x27): Security Messages
-- HNR (0x28): High Rate Navigation Results
+Messages are displayed in the following format:
+```
+UBX: [Class]-[ID]: [Details]
+```
 
-## Output Format
+Examples:
+- `UBX: NAV-PVT: Time: 2023-01-01 12:00:00, Fix: 3D Fix, Sats: 8, Pos: 37.123456°, -122.123456°, Alt: 100.5m`
+- `UBX: MON-VER: SW=ROM CORE 3.01 (107888) HW=00080000`
+- `UBX: CFG-RATE: Measurement Rate: 1000ms, Navigation Rate: 1 cycles, Time Reference: GPS`
 
-The analyzer outputs frames in the following format:
-- Valid messages: `UBX: <class>-0x<id> (<length> bytes)`
-- Invalid messages: `UBX Error: Checksum mismatch` 
+## Error Handling
+
+The analyzer performs checksum validation and displays error messages for:
+- Invalid checksums
+- Incomplete messages
+- Invalid message formats
+
+## Supported u-blox Devices
+
+This HLA supports UBX protocol messages from u-blox GPS/GNSS receivers including:
+- NEO series
+- LEA series
+- ZED series
+- MAX series
+- And other u-blox receivers using the UBX protocol
+
+## Technical Details
+
+- Synchronization: Detects UBX message start (0xB5 0x62)
+- Message Structure: Class, ID, Length, Payload, Checksum
+- Checksum: Fletcher algorithm (2 bytes)
+- Endianness: Little-endian for multi-byte fields
+
+## Limitations
+
+- Maximum message length: 65535 bytes
+- Does not decode proprietary message types
+- NMEA and RTCM protocols are not supported
