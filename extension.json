@@ -1,0 +1,13 @@
+{
+    "name": "UBX Protocol",
+    "apiVersion": "1.0.0",
+    "author": "Logic 2 HLA",
+    "version": "0.1.0",
+    "description": "Decoder for u-blox UBX protocol messages",
+    "extensions": {
+        "UBX Protocol": {
+            "type": "HighLevelAnalyzer",
+            "entryPoint": "HighLevelAnalyzer.Hla"
+        }
+    }
+} 
